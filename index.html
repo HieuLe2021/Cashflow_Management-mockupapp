@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wecare Cash Flow Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --wecare-primary: #3492ab;
+            --wecare-secondary: #2a7a94;
+            --wecare-light: #e8f4f7;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f8fafc;
+        }
+        .wecare-primary { color: var(--wecare-primary); }
+        .wecare-bg-primary { background-color: var(--wecare-primary); }
+        .wecare-bg-secondary { background-color: var(--wecare-secondary); }
+        .wecare-bg-light { background-color: var(--wecare-light); }
+        .sidebar-group.active .group-content { display: block; }
+        .sidebar-group .group-content { display: none; }
+        .report-section { display: none; }
+        .report-section.active { display: block; }
+        .kpi-card {
+            background: linear-gradient(135deg, var(--wecare-primary), var(--wecare-secondary));
+            color: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .data-table {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+        .chart-container {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            height: 400px;
+        }
+        .sidebar-item:hover {
+            background-color: var(--wecare-light);
+            color: var(--wecare-primary);
+        }
+        .sidebar-item.active {
+            background-color: var(--wecare-primary);
+            color: white;
+        }
+        .logo-container {
+            max-height: 50px;
+            display: flex;
+            align-items: center;
+        }
+        .logo-container img {
+            max-height: 40px;
+            width: auto;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="flex items-center justify-between px-6 py-4">
+            <div class="flex items-center space-x-4">
+                <div class="logo-container">
+                    <img src="https://i.imgur.com/tD07Yrv.png" alt="Wecare Logo" class="h-10">
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold wecare-primary">Cash Flow Management System</h1>
+                    <p class="text-sm text-gray-600">Industrial B2B Distribution Platform</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <select class="px-3 py-2 border border-gray-300 rounded-md text-sm">
+                    <option>Tháng 9/2025</option>
+                    <option>Tháng 8/2025</option>
+                    <option>Tháng 7/2025</option>
+                </select>
+                <select class="px-3 py-2 border border-gray-300 rounded-md text-sm">
+                    <option>Tất cả chi nhánh</option>
+                    <option>HCM</option>
+                    <option>Hà Nội</option>
+                </select>
+                <button class="wecare-bg-primary text-white px-4 py-2 rounded-md text-sm">
+                    <i class="fas fa-sync-alt mr-2"></i>Cập nhật
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex">
+        <!-- Sidebar -->
+        <aside class="w-80 bg-white shadow-sm min-h-screen border-r border-gray-200">
+            <div class="p-4">
+                <div class="space-y-2">
+                    <!-- Group 1: Core Data Management -->
+                    <div class="sidebar-group">
+                        <button onclick="toggleGroup(this)" class="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 rounded-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-database wecare-primary mr-3"></i>
+                                <span class="font-medium">Core Data Management</span>
+                            </div>
+                            <i class="fas fa-chevron-right transform transition-transform group-icon"></i>
+                        </button>
+                        <div class="group-content ml-8 space-y-1">
+                            <button onclick="showTable('bankbalance')" class="sidebar-item w-full text-left p-2 rounded text-sm">
+                                <i class="fas fa-university mr-2"></i>Bank Balance
+                            </button>
+                            <button onclick="showTable('loanmanagement')" class="sidebar-item w-full text-left p-2 rounded text-sm">
+                                <i class="fas fa-hand-holding-usd mr-2"></i>Loan Management
+                            </button>
+                            <button onclick="showTable('cashcategory')" class="sidebar-item w-full text-left p-2 rounded text-sm">
+                                <i class="fas fa-tags mr-2"></i>Cash Category
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Group 2: Transaction Processing -->
+                    <div class="sidebar-group">
+                        <button onclick="toggleGroup(this)" class="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 rounded-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-exchange-alt wecare-primary mr-3"></i>
+                                <span class="font-medium">Transaction Processing</span>
+                            </div>
+                            <i class="fas fa-chevron-right transform transition-transform group-icon"></i>
+                        </button>
+                        <div class="group-content ml-8 space-y-1">
+                            <button onclick="showTable('purchase')" class="sidebar-item w-full text-left p-2 rounded text-sm">
+                                <i class="fas fa-shopping-cart mr-2"></i>Purchase Transaction
+                            </button>
+                            <button onclick="showTable('sales')" class="sidebar-item w-full text-left p-2 rounded text-sm">
+                                <i class="fas fa-receipt mr-2"></i>Sales Transaction
+                            </button>
+                            <button onclick="showTable('ledger')" class="sidebar-item w-full text-left p-2 rounded text-sm">
+                                <i class="fas fa-book mr-2"></i>Subsidiary Ledger
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Group 3: Forecasting & Planning -->
+                    <div class="sidebar-group">
+                        <button onclick="toggleGroup(this)" class="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 rounded-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-chart-line wecare-primary mr-3"></i>
+                                <span class="font-medium">Forecasting & Planning</span>
+                            </div>
+                            <i class="fas fa-chevron-right transform transition-transform group-icon"></i>
+                        </button>
+                        <div class="group-content ml-8 space-y-1">
+                            <button onclick="showTable('forecast')" class="sidebar-item w-full text-left p-2 rounded text-sm">
+                                <i class="fas fa-crystal-ball mr-2"></i>Cash Flow Forecast
+                            </button>
+                            <button onclick="showTable('cashplan')" class="sidebar-item w-full text-left p-2 rounded text-sm">
+                                <i class="fas fa-calendar-alt mr-2"></i>Cash Plan
+                            </button>
+                            <button onclick="showTable('budget')" class="sidebar-item w-full text-left p-2 rounded text-sm">
+                                <i class="fas fa-piggy-bank mr-2"></i>Cash Budget
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Reports -->
+                    <div class="sidebar-group active">
+                        <button onclick="toggleGroup(this)" class="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 rounded-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-chart-bar wecare-primary mr-3"></i>
+                                <span class="font-medium">Reports</span>
+                            </div>
+                            <i class="fas fa-chevron-down transform transition-transform group-icon"></i>
+                        </button>
+                        <div class="group-content ml-8 space-y-1">
+                            <button onclick="showReport('summary')" class="sidebar-item w-full text-left p-2 rounded text-sm active">
+                                <i class="fas fa-chart-pie mr-2"></i>Summary Report
+                            </button>
+                            <button onclick="showReport('operational')" class="sidebar-item w-full text-left p-2 rounded text-sm">
+                                <i class="fas fa-tachometer-alt mr-2"></i>Operational Dashboard
+                            </button>
+                            <button onclick="showReport('table-overview')" class="sidebar-item w-full text-left p-2 rounded text-sm">
+                                <i class="fas fa-table mr-2"></i>Table & Setting Overview
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6">
+            <!-- Summary Report -->
+            <div id="summary-report" class="report-section active">
+                <div class="mb-6">
+                    <h2 class="text-3xl font-bold wecare-primary mb-2">Summary Report</h2>
+                    <p class="text-gray-600">Tổng hợp KPI và phân tích tổng quan các vấn đề chính của quy trình theo từng segment, thời gian</p>
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="kpi-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-white opacity-90 text-sm">Net Cashflow</p>
+                                <p class="text-2xl font-bold">₫2.55B</p>
+                                <p class="text-sm opacity-75">▲ 12.5% vs tháng trước</p>
+                            </div>
+                            <i class="fas fa-chart-line text-3xl opacity-60"></i>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-white opacity-90 text-sm">Closing Balance</p>
+                                <p class="text-2xl font-bold">₫6.5B</p>
+                                <p class="text-sm opacity-75">▲ 8.2% vs tháng trước</p>
+                            </div>
+                            <i class="fas fa-wallet text-3xl opacity-60"></i>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-white opacity-90 text-sm">Total Inflows</p>
+                                <p class="text-2xl font-bold">₫3.5B</p>
+                                <p class="text-sm opacity-75">▲ 15.3% vs tháng trước</p>
+                            </div>
+                            <i class="fas fa-arrow-down text-3xl opacity-60 text-green-300"></i>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-white opacity-90 text-sm">DSO (Days)</p>
+                                <p class="text-2xl font-bold">52</p>
+                                <p class="text-sm opacity-75 text-yellow-300">Target: 45 days</p>
+                            </div>
+                            <i class="fas fa-clock text-3xl opacity-60"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts and Tables -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <div class="chart-container">
+                        <h3 class="text-lg font-semibold mb-4">Cash Flow Trend</h3>
+                        <canvas id="cashflowChart" style="height: 300px;"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3 class="text-lg font-semibold mb-4">Cash In vs Cash Out</h3>
+                        <canvas id="cashInOutChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="data-table">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h3 class="text-lg font-semibold">Top Bank Balances</h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bank</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Balance</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Available</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    <tr>
+                                        <td class="px-6 py-4 text-sm font-medium text-gray-900">MB Bank</td>
+                                        <td class="px-6 py-4 text-sm text-gray-900">₫2.05B</td>
+                                        <td class="px-6 py-4 text-sm text-green-600">₫2.00B</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 text-sm font-medium text-gray-900">Techcombank</td>
+                                        <td class="px-6 py-4 text-sm text-gray-900">₫1.8B</td>
+                                        <td class="px-6 py-4 text-sm text-green-600">₫1.78B</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 text-sm font-medium text-gray-900">Vietcombank</td>
+                                        <td class="px-6 py-4 text-sm text-gray-900">₫1.2B</td>
+                                        <td class="px-6 py-4 text-sm text-green-600">₫1.15B</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="data-table">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h3 class="text-lg font-semibold">Recent Transactions</h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    <tr>
+                                        <td class="px-6 py-4 text-sm text-gray-900">9/6/2025</td>
+                                        <td class="px-6 py-4 text-sm text-blue-600">Sales</td>
+                                        <td class="px-6 py-4 text-sm text-green-600">+₫3.87M</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 text-sm text-gray-900">9/6/2025</td>
+                                        <td class="px-6 py-4 text-sm text-red-600">Purchase</td>
+                                        <td class="px-6 py-4 text-sm text-red-600">-₫2.07M</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 text-sm text-gray-900">9/5/2025</td>
+                                        <td class="px-6 py-4 text-sm text-blue-600">Collection</td>
+                                        <td class="px-6 py-4 text-sm text-green-600">+₫11.61M</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Operational Dashboard -->
+            <div id="operational-report" class="report-section">
+                <div class="mb-6">
+                    <h2 class="text-3xl font-bold wecare-primary mb-2">Operational Dashboard</h2>
+                    <p class="text-gray-600">Công cụ hỗ trợ quản lý theo dõi vận hành liên tục trong ngày/tuần</p>
+                </div>
+
+                <!-- Alert Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-exclamation-triangle text-red-500 mr-3"></i>
+                            <div>
+                                <h4 class="font-semibold text-red-800">Cash Alert</h4>
+                                <p class="text-sm text-red-600">Projected Min Cash < 5M</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-clock text-yellow-500 mr-3"></i>
+                            <div>
+                                <h4 class="font-semibold text-yellow-800">DSO Warning</h4>
+                                <p class="text-sm text-yellow-600">DSO > 55 days target</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                            <div>
+                                <h4 class="font-semibold text-green-800">All Systems OK</h4>
+                                <p class="text-sm text-green-600">No critical issues</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Real-time KPIs -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white rounded-lg p-6 shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Today's Inflow</p>
+                                <p class="text-2xl font-bold wecare-primary">₫22.33M</p>
+                            </div>
+                            <i class="fas fa-arrow-down text-green-500 text-2xl"></i>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg p-6 shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Today's Outflow</p>
+                                <p class="text-2xl font-bold text-red-500">₫18.5M</p>
+                            </div>
+                            <i class="fas fa-arrow-up text-red-500 text-2xl"></i>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg p-6 shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Overdue AR</p>
+                                <p class="text-2xl font-bold text-orange-500">₫125M</p>
+                            </div>
+                            <i class="fas fa-hourglass-half text-orange-500 text-2xl"></i>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg p-6 shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Liquidity Buffer</p>
+                                <p class="text-2xl font-bold text-blue-500">28 days</p>
+                            </div>
+                            <i class="fas fa-shield-alt text-blue-500 text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Operational Charts -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="chart-container">
+                        <h3 class="text-lg font-semibold mb-4">Daily Cash Position</h3>
+                        <canvas id="dailyCashChart" style="height: 300px;"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3 class="text-lg font-semibold mb-4">AR Aging Analysis</h3>
+                        <canvas id="arAgingChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table Overview -->
+            <div id="table-overview-report" class="report-section">
+                <div class="mb-6">
+                    <h2 class="text-3xl font-bold wecare-primary mb-2">Table & Setting Overview</h2>
+                    <p class="text-gray-600">Hệ thống về dữ liệu và cấu hình nền tảng của quy trình</p>
+                </div>
+
+                <!-- Table Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Core Data Management Tables -->
+                    <div class="bg-white rounded-lg p-6 shadow border-l-4 border-blue-500">
+                        <h4 class="font-semibold text-lg mb-2">Bank Balance</h4>
+                        <p class="text-sm text-gray-600 mb-4">5 banks tracked</p>
+                        <div class="text-sm">
+                            <p>Total Balance: ₫6.5B</p>
+                            <p>Available: ₫6.37B</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg p-6 shadow border-l-4 border-blue-500">
+                        <h4 class="font-semibold text-lg mb-2">Loan Management</h4>
+                        <p class="text-sm text-gray-600 mb-4">3 active loans</p>
+                        <div class="text-sm">
+                            <p>Total Loan: ₫4B</p>
+                            <p>Outstanding: ₫3.2B</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg p-6 shadow border-l-4 border-blue-500">
+                        <h4 class="font-semibold text-lg mb-2">Cash Category</h4>
+                        <p class="text-sm text-gray-600 mb-4">3 main categories</p>
+                        <div class="text-sm">
+                            <p>Operating: C01</p>
+                            <p>Financing: C02</p>
+                            <p>Investing: C03</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg p-6 shadow border-l-4 border-blue-500">
+                        <h4 class="font-semibold text-lg mb-2">Cash Budget</h4>
+                        <p class="text-sm text-gray-600 mb-4">3 months planned</p>
+                        <div class="text-sm">
+                            <p>May: ₫10M planned</p>
+                            <p>Jun: ₫15M planned</p>
+                            <p>Jul: ₫20M planned</p>
+                        </div>
+                    </div>
+
+                    <!-- Transaction Processing Tables -->
+                    <div class="bg-white rounded-lg p-6 shadow border-l-4 border-green-500">
+                        <h4 class="font-semibold text-lg mb-2">Purchase Transaction</h4>
+                        <p class="text-sm text-gray-600 mb-4">Latest transactions</p>
+                        <div class="text-sm">
+                            <p>Sep 6: ₫2.07M</p>
+                            <p>Supplier: Hạnh Liễu 2</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg p-6 shadow border-l-4 border-green-500">
+                        <h4 class="font-semibold text-lg mb-2">Sales Transaction</h4>
+                        <p class="text-sm text-gray-600 mb-4">Latest sales</p>
+                        <div class="text-sm">
+                            <p>Jul 29: ₫3.87M</p>
+                            <p>Customer: Quạt Bát</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg p-6 shadow border-l-4 border-green-500">
+                        <h4 class="font-semibold text-lg mb-2">Subsidiary Ledger</h4>
+                        <p class="text-sm text-gray-600 mb-4">Account entries</p>
+                        <div class="text-sm">
+                            <p>May 1: Collections</p>
+                            <p>Total: ₫22.33M</p>
+                        </div>
+                    </div>
+
+                    <!-- Forecasting & Planning Tables -->
+                    <div class="bg-white rounded-lg p-6 shadow border-l-4 border-purple-500">
+                        <h4 class="font-semibold text-lg mb-2">Cash Flow Forecast</h4>
+                        <p class="text-sm text-gray-600 mb-4">Aug 31 forecast</p>
+                        <div class="text-sm">
+                            <p>Net Cash: ₫2.55B</p>
+                            <p>Cash In: ₫3.5B</p>
+                            <p>Cash Out: ₫950M</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Configuration -->
+                <div class="mt-8">
+                    <h3 class="text-xl font-semibold mb-4">System Configuration</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-lg p-6 shadow">
+                            <h4 class="font-semibold mb-4">Alert Rules</h4>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span>Net Cash < 0</span>
+                                    <span class="text-red-500">finance@wecare.vn</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Min Cash < 5M</span>
+                                    <span class="text-red-500">cfo@wecare.vn</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>DSO > 55</span>
+                                    <span class="text-yellow-500">ar@wecare.vn</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg p-6 shadow">
+                            <h4 class="font-semibold mb-4">KPI Targets</h4>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span>Net Cash Flow</span>
+                                    <span class="text-green-500">> 0</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>DSO</span>
+                                    <span class="text-blue-500">45 days</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Min Cash</span>
+                                    <span class="text-blue-500">≥ 5M</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Initialize charts when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+        });
+
+        // Sidebar functionality
+        function toggleGroup(button) {
+            const group = button.parentElement;
+            const icon = button.querySelector('.group-icon');
+            
+            group.classList.toggle('active');
+            
+            if (group.classList.contains('active')) {
+                icon.classList.add('rotate-90');
+            } else {
+                icon.classList.remove('rotate-90');
+            }
+        }
+
+        function showReport(reportType) {
+            // Hide all reports
+            document.querySelectorAll('.report-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show selected report
+            document.getElementById(reportType + '-report').classList.add('active');
+            
+            // Update sidebar active state
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Reinitialize charts for the active report
+            setTimeout(() => {
+                initializeCharts();
+            }, 100);
+        }
+
+        function showTable(tableType) {
+            // For demo purposes, show table overview
+            showReport('table-overview');
+            
+            // Update sidebar active state
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        function initializeCharts() {
+            // Cash Flow Trend Chart
+            const cashflowCtx = document.getElementById('cashflowChart');
+            if (cashflowCtx) {
+                new Chart(cashflowCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
+                        datasets: [{
+                            label: 'Net Cash Flow (Billions)',
+                            data: [1.2, 1.8, 2.1, 1.9, 2.3, 2.0, 2.4, 2.2, 2.55],
+                            borderColor: '#3492ab',
+                            backgroundColor: 'rgba(52, 146, 171, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Amount (Billions VND)'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Cash In vs Out Chart
+            const cashInOutCtx = document.getElementById('cashInOutChart');
+            if (cashInOutCtx) {
+                new Chart(cashInOutCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                        datasets: [{
+                            label: 'Cash In',
+                            data: [850, 920, 780, 950],
+                            backgroundColor: '#10b981'
+                        }, {
+                            label: 'Cash Out',
+                            data: [720, 680, 750, 850],
+                            backgroundColor: '#ef4444'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Amount (Millions VND)'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Daily Cash Position Chart
+            const dailyCashCtx = document.getElementById('dailyCashChart');
+            if (dailyCashCtx) {
+                new Chart(dailyCashCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        datasets: [{
+                            label: 'Daily Balance',
+                            data: [6.2, 6.3, 6.1, 6.4, 6.5, 6.3, 6.5],
+                            borderColor: '#3492ab',
+                            backgroundColor: 'rgba(52, 146, 171, 0.1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                min: 6.0,
+                                title: {
+                                    display: true,
+                                    text: 'Balance (Billions VND)'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // AR Aging Chart
+            const arAgingCtx = document.getElementById('arAgingChart');
+            if (arAgingCtx) {
+                new Chart(arAgingCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['0-30 days', '31-60 days', '61-90 days', '90+ days'],
+                        datasets: [{
+                            data: [45, 25, 20, 10],
+                            backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#7c2d12']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>
